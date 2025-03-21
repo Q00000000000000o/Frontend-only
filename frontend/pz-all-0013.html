@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>盾构推进姿态和管片拼装指导系统</title>
+    <style>
+         body {margin:0; padding-bottom:10px; font-family:Arial;}
+        #toolbar {
+            position:fixed;  bottom:0;left: 0; width:100%;
+            background:#555555; display:flex; justify-content:space-around; align-items: center; font-size: 30px;
+            padding:12px 0; height:60px; box-sizing:border-box;z-index: 1000
+        }
+        .tool-btn {color:white; cursor:pointer; padding:8px 20px;}
+        .page {display:none;  top:2; max-width: 100vw; margin:0 auto;}
+        canvas {border:2px solid #000; background:#eee; margin:0px auto;width: 100%; }
+        .btn-group {display:flex; gap:10px; margin:15px auto; justify-content:space-between; }
+        .param-grid {display:grid; gap:5px; margin:15px auto;}
+        #three-container {margin:0px auto;width: 100%;}
+        #hint {background:#e0ffe0; margin-top: 20px; padding:15px; min-height: 20px; width: calc(100% - 40px);}
+   
+        .param-block {border:1px solid #ddd; padding:15px; margin:15px 0;}
+    </style> 
+    <style>
+
+        .point-input {
+            margin: 10px 0;
+        }
+        input {
+            width: 80px;
+            margin: 5px;
+        }
+    </style>
+  <style>
+ 
+        .input-group {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .input-row {
+            margin-right: 5px;
+        }
+        input {
+            width: 60px;
+            margin: 5px;
+     //       padding: 3px;
+        }
+        label {
+    //     display: inline-block;
+            width: 30px;
+        }
+    </style>
+  <style>
+        body {
+            font-family: Arial, sans-serif;
+           margin: 10px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        label {
+            width: 80px;
+            margin-right: 5px; /* 缩短标签和输入框之间的间距 */
+        }
+        input {
+            flex: 1;
+            padding: 5px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .row > div {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .row > div:last-child {
+            margin-right: 0;
+        }
+        button {
+            margin-top: 10px;
+           font-size: 25px;
+        }
+    </style>
+<style>
+        body {
+            font-family: Arial, sans-serif;
+        //    margin: 20px;
+        }
+        .input-group {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        label {
+            width: 100px;
+        }
+        input {
+            flex: 1;
+            margin-left: 10px;
+            padding: 5px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .row > div {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .row > div:last-child {
+            margin-right: 0;
+        }
+        button {
+            margin-top: 10px;
+            font-size: 25px;
+        }
+    </style>
+
+
+    <script>
+        // 全局变量
+        //头部相关变量
+        var headx, heady, headz;
+        headx=8, heady=0, headz=0;
+        var tailx, taily, tailz;
+         tailx=2, taily=0, tailz=0
+        var leftx, lefty, leftz;
+         leftx=8, lefty=0, leftz=5;
+        var rightx, righty, rightz;
+        rightx=8, righty=10, rightz=5;
+        // 扩展头部变量
+        var headxx, headyy, headzz;
+        var tailxx, tailyy, tailzz;
+        var leftxx, leftyy, leftzz;
+        var rightxx, rightyy, rightzz;
+        
+        // 点坐标变量
+        var p0x, p0y, p0z;
+        var pp0x, pp0y, pp0z;
+        var p1x, p1y, p1z;
+        p1x=5;
+        p1y=10;
+        p1z=0;
+        var p2x, p2y, p2z;
+        p2x=5;
+        p2y=10;
+        p2z=10;
+        var p3x, p3y, p3z;
+        p3x=5;
+        p3y=0;
+        p3z=0;
+        var pp1x, pp1y, pp1z;
+        pp1x=23;
+        pp1y=5.002;
+        pp1z=0.001;
+        var pp2x, pp2y, pp2z;
+        pp2x=23;
+        pp2y=5;
+        pp2z=5;
+        var pp3x, pp3y, pp3z;
+        pp3x=23;
+        pp3y=-5.005;
+        pp3z=-5; 
+        // 管片设计参数  
+    var GPWJ, GPHD, QXL, HFLSS;   
+    var GPKD, FKSL, DWYXJX, DGMC,PZMJ;   
+    var PZFS;  
+
+    // 当环施工参数 
+    var ax,ay,bx,by,cx,cy,dx,dy,pzpcx, pzpcy;
+    var D1, D2, D3, D4, D5, D6, D7, D8;   
+    var  XDDW,TJFS, DQHS, DQLC;  
+
+    //全局变量初始赋值区 A 盾尾 B 切口 C 设计导向 D 拼装基准
+     ax=0;
+     ay=0,
+     bx=3.2;
+     by=-1.5;
+     cx=1;
+     cy=-1,
+     dx=2;
+     dy=2.5;
+     pzpcx=0;
+     pzpcy=0;
+
+    </script>
+    <script>
+        // 隧道设计路线
+        const linepoints = [
+   [0.0, 0.0, 0.0],
+   [10.0, 1.0, 0.0],
+   [20.0, 1.5, 0.5],
+   [30.0, 2.0, 1.0],
+   [40.0, 2.5, 1.5],
+   [50.0, 3.0, 2.0],
+   [60.0, 3.5, 2.0],
+   [70.0, 3.5, 2.0]
+ ];
+const polyline = linepoints.map(([x, y, z]) => ({x, y, z}));
+   </script>
+
+ <script>
+// 本script来自TM1
+//  解方程组 输入p0，输出pp0 两者皆全局变量，调用前赋值p0
+
+function solveEquations() {
+       
+        
+     var a1 = pp1x-pp2x;
+       var b1 = pp1y-pp2y;
+       var c1 = pp1z-pp2z;
+
+       var a2 = pp3x-pp2x;
+       var b2 = pp3y-pp2y;
+       var c2 = pp3z-pp2z;
+
+       var a3 = (pp1y-pp2y)*(pp3z-pp2z)-(pp1z-pp2z)*(pp3y-pp2y);
+       var b3 = (pp1z-pp2z)*( pp3x-pp2x)-(pp1x-pp2x)*(pp3z-pp2z);
+       var c3 = (pp1x-pp2x)*(pp3y-pp2y)-(pp1y-pp2y)*(pp3x-pp2x);
+
+
+       var aa = (p1x-p2x)*(p0x-p2x)+(p1y-p2y)*(p0y-p2y)+(p1z-p2z)*(p0z-p2z);
+       var bb =(p3x-p2x)*(p0x-p2x)+(p3y-p2y)*(p0y-p2y)+(p3z-p2z)*(p0z-p2z);
+       var cc = ((p1y-p2y)*(p3z-p2z)-(p1z-p2z)*(p3y-p2y))*(p0x-p2x)+((p1z-p2z)*( p3x-p2x)-(p1x-p2x)*(p3z-p2z))*(p0y-p2y)+((p1x-p2x)*(p3y-p2y)-(p1y-p2y)*(p3x-p2x))*(p0z-p2z);
+
+
+
+        // Convert inputs to numbers
+        a1 = parseFloat(a1);
+        b1 = parseFloat(b1);
+        c1 = parseFloat(c1);
+        a2 = parseFloat(a2);
+        b2 = parseFloat(b2);
+        c2 = parseFloat(c2);
+        a3 = parseFloat(a3);
+        b3 = parseFloat(b3);
+        c3 = parseFloat(c3);
+        aa = parseFloat(aa);
+        bb = parseFloat(bb);
+        cc = parseFloat(cc);
+
+        // Check for NaN
+       if (isNaN(a1) || isNaN(b1) || isNaN(c1) ||
+           isNaN(a2) || isNaN(b2) || isNaN(c2) ||
+          isNaN(a3) || isNaN(b3) || isNaN(c3) ||
+          isNaN(aa) || isNaN(bb) || isNaN(cc)) {
+     //     document.getElementById('result').innerHTML = 'y';
+  
+    //       document.getElementById('error').innerHTML = 'Please enter valid numbers for all coefficients.';
+           return;
+     }
+        // Calculate determinants
+        var D = a1*(b2*c3 - b3*c2) - b1*(a2*c3 - a3*c2) + c1*(a2*b3 - a3*b2);
+        var Dx = aa*(b2*c3 - b3*c2) - b1*(bb*c3 - cc*c2) + c1*(bb*b3 - cc*b2);
+        var Dy = a1*(bb*c3 - cc*c2) - aa*(a2*c3 - a3*c2) + c1*(a2*cc - a3*bb);
+        var Dz = a1*(b2*cc - b3*bb) - b1*(a2*cc - a3*bb) + aa*(a2*b3 - a3*b2);
+
+        // Epsilon for zero check
+        var epsilon = 1e-10;
+
+        if (Math.abs(D) < epsilon) {
+      //      document.getElementById('result').innerHTML = '';
+      //     document.getElementById('error').innerHTML = 'No unique solution (Determinant is zero).';
+            return;
+        }
+
+        // Calculate x, y, z
+        var x = Dx / D;
+        var y = Dy / D;
+        var z = Dz / D;
+        pp0x=pp2x+x;
+        pp0y=pp2y+y;
+        pp0z=pp2z+z;
+
+        // Display results
+    //    document.getElementById('result').innerHTML = 
+    //        'x = ' + x.toFixed(2) + '<br>' +
+     //       'y = ' + y.toFixed(2) + '<br>' +
+     //       'z = ' + z.toFixed(2);
+   //     document.getElementById('error').innerHTML = '';
+    }
+
+//P1P2P3点位及边长校验检测
+function calculate() {
+
+       console.log('cal-p1:', p1x, p1y, p1z);
+       console.log('p2:', p2x, p2y, p2z);
+       console.log('p3:', p3x, p3y, p3z);
+       console.log('cal-pp1:', pp1x, pp1y, pp1z);
+       console.log('pp2:', pp2x, pp2y, pp2z);
+       console.log('pp3:', pp3x, pp3y, pp3z);
+
+
+    // Calculate distances A, B, C
+    var A = Math.sqrt( (p2x - p1x)*(p2x - p1x) + (p2y - p1y)*(p2y - p1y) + (p2z - p1z)*(p2z - p1z) );
+    var B = Math.sqrt( (p3x - p1x)*(p3x - p1x) + (p3y - p1y)*(p3y - p1y) + (p3z - p1z)*(p3z - p1z) );
+    var C = Math.sqrt( (p2x - p3x)*(p2x - p3x) + (p2y - p3y)*(p2y - p3y) + (p2z - p3z)*(p2z - p3z) );
+
+    // Check for overlapping initial points
+    if (A == 0 || B == 0 || C == 0) {
+        alert("初态空间点重叠");
+        return;
+    }
+
+    // Check if points are collinear
+    var cosTheta = (A*A + B*B - C*C)/(2*A*B);
+    if (cosTheta == 1 || cosTheta == -1) {
+        alert("初态空间P1,P2,P3三点一直线，设置无效！");
+        return;
+    }
+
+    // Calculate distances AA, BB, CC
+    var AA = Math.sqrt( (pp2x - pp1x)*(pp2x - pp1x) + (pp2y - pp1y)*(pp2y - pp1y) + (pp2z - pp1z)*(pp2z - pp1z) );
+    var BB = Math.sqrt( (pp3x - pp1x)*(pp3x - pp1x) + (pp3y - pp1y)*(pp3y - pp1y) + (pp3z - pp1z)*(pp3z - pp1z) );
+    var CC = Math.sqrt( (pp2x - pp3x)*(pp2x - pp3x) + (pp2y - pp3y)*(pp2y - pp3y) + (pp2z - pp3z)*(pp2z - pp3z) );
+
+    // Check for overlapping current points
+    if (AA == 0 || BB == 0 || CC == 0) {
+        alert("P1,P2,P3三空间点重叠, 设置无效");
+        return;
+    }
+
+    // Check for error in edge lengths
+    if ((AA - A) > 0.001 || (BB - B) > 0.001 || (CC - C) > 0.001) {
+        alert("请注意：系统检测到P1,P2,P3各点间的边长校验误差超过0.001个单位, 请检查P1,P2,P3的测量情况！");
+    }
+}
+
+function head0(){
+
+       calculate();
+       console.log('head0-b-p1:', p1x, p1y, p1z);
+       console.log('p2:', p2x, p2y, p2z);
+       console.log('p3:', p3x, p3y, p3z);
+       console.log('head:', headx, heady, headz);
+    //   console.log('hhead:', headxx, headyy, headzz);
+       console.log('tail:', tailx, taily, tailz);
+   //    console.log('ttail:', tailxx, tailyy, tailzz);
+       console.log('right:', rightx, righty, rightz);
+    //   console.log('rright:', rightxx, rightyy, rightzz);
+
+    p0x=headx;
+    p0y=heady;
+    p0z=headz;
+    solveEquations();
+    headxx=pp0x;
+    headyy=pp0y;
+     headzz=pp0z;
+
+    p0x=tailx;
+    p0y=taily;
+    p0z=tailz;
+    solveEquations();
+    tailxx=pp0x;
+   tailyy=pp0y;
+     tailzz=pp0z;
+
+    p0x=leftx;
+    p0y=lefty;
+    p0z=leftz;
+    solveEquations();
+    leftxx=pp0x;
+    leftyy=pp0y;
+     leftzz=pp0z;
+ 
+    p0x=rightx;
+    p0y=righty;
+    p0z=rightz;
+    solveEquations();
+    rightxx=pp0x;
+    rightyy=pp0y;
+     rightzz=pp0z;
+
+       console.log('head0-e-p1:', p1x, p1y, p1z);
+       console.log('p2:', p2x, p2y, p2z);
+       console.log('p3:', p3x, p3y, p3z);
+       console.log('head:', headx, heady, headz);
+       console.log('hhead:', headxx, headyy, headzz);
+       console.log('tail:', tailx, taily, tailz);
+       console.log('ttail:', tailxx, tailyy, tailzz);
+       console.log('right:', rightx, righty, rightz);
+       console.log('rright:', rightxx, rightyy, rightzz);
+
+     calculateAll();
+            console.log('AAA:', ax,ay);
+            console.log('BBB:', bx,by);
+            console.log('CCC:', cx,cy);
+            console.log('DDD:', dx,dy);
+      
+       let lnewString = `【设计路线偏差】盾尾:(${(ax*100).toFixed(1)}/${(ay*100).toFixed(1)}) 切口:(${(bx*100).toFixed(1)}/${(by*100).toFixed(1)}) 导向:(${(cx*100).toFixed(1)}/${(cy*100).toFixed(1)}) 拼装:(${(dx*100).toFixed(1)}/${(dy*100).toFixed(1)}) `;  // 使用模板字符串
+       document.getElementById('hint').textContent = lnewString;
+    
+ //   document.getElementById('hint').textContent = '盾尾';
+console.log('hint:', lnewString);
+   }
+
+
+
+ </script>
+
+<script>
+        // 偏差计算 A盾尾中心 B切口中心 C 拼装基准面 D 设计导向切面
+        function calculateAll() {
+            // 1. 获取输入的A、B、R点坐标
+         //   var tailxx = parseFloat(document.getElementById('tailxx').value);
+       //     var tailyy = parseFloat(document.getElementById('tailyy').value);
+       //     var tailzz = parseFloat(document.getElementById('tailzz').value);
+       //     var headxx = parseFloat(document.getElementById('headxx').value);
+        //    var headyy = parseFloat(document.getElementById('headyy').value);
+       //     var headzz = parseFloat(document.getElementById('headzz').value);
+       //     var rightxx = parseFloat(document.getElementById('rightxx').value);
+      //      var rightyy = parseFloat(document.getElementById('rightyy').value);
+      //      var rightzz = parseFloat(document.getElementById('rightzz').value);
+      //      var leftxx, leftyy, leftzz; // 声明但未使用
+
+            const A = {x: tailxx, y: tailyy, z: tailzz};
+            const B = {x: headxx, y: headyy, z: headzz};
+            const R = {x: rightxx, y: rightyy, z: rightzz};
+
+            // 计算C和D
+            const vectorAB = {x: B.x - A.x, y: B.y - A.y, z: B.z - A.z};
+            const lengthAB = Math.sqrt(vectorAB.x * vectorAB.x + vectorAB.y * vectorAB.y + vectorAB.z * vectorAB.z);
+            if (lengthAB === 0) {
+                alert("A和B点不能重合！");
+                return;
+            }
+            const unitVector = {x: vectorAB.x / lengthAB, y: vectorAB.y / lengthAB, z: vectorAB.z / lengthAB};
+     //       const C = {x: B.x + unitVector.x * 1000, y: B.y + unitVector.y * 1000, z: B.z + unitVector.z * 1000};
+     //       const D = {x: A.x + unitVector.x * 1000, y: A.y + unitVector.y * 1000, z: A.z + unitVector.z * 1000};
+           const C = {x: B.x + unitVector.x * 1, y: B.y + unitVector.y * 1, z: B.z + unitVector.z * 1};
+            const D = {x: A.x + unitVector.x * 1, y: A.y + unitVector.y * 1, z: A.z + unitVector.z * 1};
+            const vectorAD = {x: D.x - A.x, y: D.y - A.y, z: D.z - A.z};
+       
+       console.log('C:', C);
+     //  console.log('D:', p2x, p2y, p2z);
+     
+
+            // 2. 计算法平面
+            function getPlaneEquation(point, normal) {
+                const d = -(normal.x * point.x + normal.y * point.y + normal.z * point.z);
+                return {a: normal.x, b: normal.y, c: normal.z, d: d};
+            }
+            const planes = [
+                getPlaneEquation(A, vectorAD),
+                getPlaneEquation(B, vectorAD),
+                getPlaneEquation(C, vectorAD),
+                getPlaneEquation(D, vectorAD)
+            ];
+
+            // 3. 计算折线与法平面的交点
+         //   const POINTS = [
+        //        [-0.2, 1, 0],
+         //       [5, 1, 1],
+        //        [10, -1, 0],
+       //         [15, 1, 3],
+        //        [20, 2, 2]
+        //    ];
+        //   const polyline = LINEPOINTS.map(([x, y, z]) => ({x, y, z}));
+            
+            function getIntersection(p1, p2, plane) {
+                const dir = {x: p2.x - p1.x, y: p2.y - p1.y, z: p2.z - p1.z};
+                const denom = plane.a * dir.x + plane.b * dir.y + plane.c * dir.z;
+                if (Math.abs(denom) < 1e-6) return null;
+                const num = -(plane.a * p1.x + plane.b * p1.y + plane.c * p1.z + plane.d);
+                const t = num / denom;
+                if (t < 0 || t > 1) return null;
+                return {x: p1.x + t * dir.x, y: p1.y + t * dir.y, z: p1.z + t * dir.z};
+            }
+            
+            const abcdpoints = [A, B, C, D];
+            const intersections = planes.map((plane, i) => {
+                for (let j = 0; j < polyline.length - 1; j++) {
+                    const intersection = getIntersection(polyline[j], polyline[j + 1], plane);
+                    if (intersection) return {point: intersection, ref: abcdpoints[i]};
+                }
+                return null;
+            });
+
+            // 4. 定义X轴和Y轴，计算偏差
+            function dotProduct(v1, v2) {
+                return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+            }
+            function subtractVectors(v1, v2) {
+                return {x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z};
+            }
+            function crossProduct(v1, v2) {
+                return {
+                    x: v1.y * v2.z - v1.z * v2.y,
+                    y: v1.z * v2.x - v1.x * v2.z,
+                    z: v1.x * v2.y - v1.y * v2.x
+                };
+            }
+            function magnitude(v) {
+                return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+            }
+            function normalize(v) {
+                const mag = magnitude(v);
+                if (mag < 1e-6) return null;
+                return {x: v.x / mag, y: v.y / mag, z: v.z / mag};
+            }
+
+            // X轴：BR向量在法平面上的投影
+            const vectorBR = subtractVectors(R, B);
+            const adUnit = normalize(vectorAD);
+            const projBRonAD = dotProduct(vectorBR, adUnit);
+            const xAxisBase = subtractVectors(vectorBR, {
+                x: adUnit.x * projBRonAD,
+                y: adUnit.y * projBRonAD,
+                z: adUnit.z * projBRonAD
+            });
+            const xAxis = normalize(xAxisBase);
+            if (!xAxis) {
+                alert("B到R的向量与AD平行，无法定义X轴！");
+                return;
+            }
+
+            // Y轴：法平面内垂直于X轴
+            const yAxis = normalize(crossProduct(vectorAD, xAxis));
+
+ // 计算偏差并赋值给变量
+        //    let AX, AY, BX, BY, CX, CY, DX, DY;
+            const deviations = intersections.map((intersection, i) => {
+                if (!intersection) {
+                    if (i === 0) { ax = null; ay = null; }
+                    else if (i === 1) { bx = null; by = null; }
+                    else if (i === 2) { cx = null; cy = null; }
+                    else if (i === 3) { dx = null; dy = null; }
+                    return {horizontal: null, vertical: null};
+                }
+                
+                const refPoint = abcdpoints[i];
+                const diff = subtractVectors(intersection.point, refPoint);
+                const horizontal = dotProduct(diff, xAxis); // X轴方向
+                const vertical = dotProduct(diff, yAxis);   // Y轴方向
+
+                if (i === 0) { ax = horizontal; ay = vertical; }
+                else if (i === 1) { bx = horizontal; by = vertical; }
+                else if (i === 2) { cx = horizontal; cy = vertical; }
+                else if (i === 3) { dx = horizontal; dy = vertical; }
+                
+                return {horizontal, vertical};
+            });
+
+            // 5. 显示偏差
+            console.log('A:', ax,ay);
+            console.log('B:', bx,by);
+            console.log('C:', cx,cy);
+            console.log('D:', dx,dy);
+
+   //         const deviationIds = ['deviationA', 'deviationB', 'deviationC', 'deviationD'];
+  //          deviations.forEach((dev, i) => {
+   //             document.getElementById(deviationIds[i]).innerText = dev.horizontal !== null ? 
+   //                 `水平偏差(X轴): ${dev.horizontal.toFixed(2)}, 垂直偏差(Y轴): ${dev.vertical.toFixed(2)}` : '无交点';
+   //         });
+        }
+    </script>
+
+
+</head>
+<body>
+    <!-- 工具栏 -->
+    <div id="toolbar"    >
+        <span class="tool-btn" data-page="page1">主控中心</span>
+        <span class="tool-btn" data-page="page2">三维路线</span>
+        <span class="tool-btn" data-page="page3">参数设置</span>
+        <span class="tool-btn" data-page="page4">说明文档</span>
+    </div>
+
+    <!-- 主控中心 -->
+    <div id="page1" class="page">
+       <h2>盾构推进姿态和管片拼装指导系统</h2>
+        <canvas id="mainCanvas" width="650" height="650"></canvas>
+        
+        <div class="btn-group" style= "width: 100%" >
+            <button class="control-btn" data-action="updateA1">盾尾平面中心</button>
+            <button class="control-btn" data-action="updateA2">切口平面中心</button>
+            <button class="control-btn" data-action="updateA3">设计路线导向</button>
+            <button class="control-btn" data-action="updateA4">拼装基面偏差</button>
+        </div>
+
+<div id="result"></div>
+<div id="error"></div>
+
+         <div class="container">
+         <h3>实测P1,P2,P3三点坐标值：</h3>
+        <div class="point-input">
+            PP1: x<input type="number" id="pp1x"> 
+            y<input type="number" id="pp1y">
+            z<input type="number" id="pp1z">
+        </div>
+        
+        <div class="point-input">
+            PP2: x<input type="number" id="pp2x">
+            y<input type="number" id="pp2y"> 
+            z<input type="number" id="pp2z">
+        </div>
+        
+        <div class="point-input">
+            PP3: x<input type="number" id="pp3x">
+            y<input type="number" id="pp3y">
+            z<input type="number" id="pp3z">
+        </div>
+
+        <button onclick="confirmPoints()">确认并生成设计路线交点偏差位置（红色十字）</button>
+    </div>
+
+    <div class="container">
+         <h3>实测管片与盾构间隙：</h3>
+        <div class="input-group">
+            <div class="input-row">
+                <label>D1:</label>
+                <input type="number" id="d1" step="any">
+            </div>
+            
+            <div class="input-row">
+                <label>D2:</label>
+                <input type="number" id="d2" step="any">
+            </div>
+            
+            <div class="input-row">
+                <label>D3:</label>
+                <input type="number" id="d3" step="any">
+            </div>
+
+            <div class="input-row">
+                <label>D4:</label>
+                <input type="number" id="d4" step="any">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="input-row">
+                <label>D5:</label>
+                <input type="number" id="d5" step="any">
+            </div>
+
+            <div class="input-row">
+                <label>D6:</label>
+                <input type="number" id="d6" step="any">
+            </div>
+
+            <div class="input-row">
+                <label>D7:</label>
+                <input type="number" id="d7" step="any">
+            </div>
+
+            <div class="input-row">
+                <label>D8:</label>
+                <input type="number" id="d8" step="any">
+            </div>
+        </div>
+     <button onclick="confirmValues()">确认并生成管片圆环中心偏差位置（蓝色十字）</button>
+    </div>
+
+    <div id="hint"></div>
+    </div>
+
+    <!-- 路线参数 -->
+    <div id="page2" class="page">
+   <h2>隧道和设计路线3D效果显示</h2>
+        <div id="three-container"></div>
+        <div id="coords-display" style="padding:15px;"></div>
+  <h5>  ----隧道设计路线，“点1”为起点，箭头为盾构推进方向。 注：单指或双指互动。</h5>
+    </div>
+
+    <!-- 参数设置 -->
+    <div id="page3" class="page">
+ 
+    <h1>盾构初始参数.7点坐标.</h1>
+   
+
+    <div class="row">
+        <div class="input-group">
+            <label for="P1X">P1 X :</label>
+            <input type="text" id="P1X" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="P1Y">P1 Y :</label>
+            <input type="text" id="P1Y" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="P1Z">P1 Z :</label>
+            <input type="text" id="P1Z" placeholder="-">
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group">
+            <label for="P2X">P2 X:</label>
+            <input type="text" id="P2X" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="P2Y">P2 Y:</label>
+            <input type="text" id="P2Y" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="P2Z">P2 Z:</label>
+            <input type="text" id="P2Z" placeholder="-">
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group">
+            <label for="P3X">P3 X:</label>
+            <input type="text" id="P3X" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="P3Y">P3 Y:</label>
+            <input type="text" id="P3Y" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="P3Z">P3 Z:</label>
+            <input type="text" id="P3Z" placeholder="-">
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group">
+            <label for="headx">切口中心 X:</label>
+            <input type="text" id="headx" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="heady">切口中心 Y:</label>
+            <input type="text" id="heady" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="headz">切口中心 Z:</label>
+            <input type="text" id="headz" placeholder="-">
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group">
+            <label for="tailx">盾尾中心 X:</label>
+            <input type="text" id="tailx" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="taily">盾尾中心 Y:</label>
+            <input type="text" id="taily" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="tailz">盾尾中心 Z:</label>
+            <input type="text" id="tailz" placeholder="-">
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group">
+            <label for="leftx">横轴左端 X:</label>
+            <input type="text" id="leftx" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="lefty">横轴左端 Y:</label>
+            <input type="text" id="lefty" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="leftz">横轴左端 Z:</label>
+            <input type="text" id="leftz" placeholder="-">
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group">
+            <label for="rightx">横轴右端 X:</label>
+            <input type="text" id="rightx" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="righty">横轴右端 Y:</label>
+            <input type="text" id="righty" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="rightz">横轴右端 Z:</label>
+            <input type="text" id="rightz" placeholder="-">
+        </div>
+    </div>
+
+    <button onclick="assignCoordinates()">确            认</button>
+  <h1>通用管片拼装参数</h1>
+
+    <div class="row">
+        <div class="input-group">
+            <label for="管片外径">管片外径:</label>
+            <input type="text" id="GPWJ" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="GPHD">管片厚度:</label>
+            <input type="text" id="GPHD" placeholder="-">
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group">
+            <label for="QXL">楔形量:</label>
+            <input type="text" id="QXL" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="HFLSS">环缝螺栓数:</label>
+            <input type="text" id="HFLSS" placeholder="-">
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group">
+            <label for="GPKD">管片宽度:</label>
+            <input type="text" id="GPKD" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="FKSL">分块数量:</label>
+            <input type="text" id="FKSL" placeholder="-">
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group">
+            <label for="DWYXJX">盾尾净间隙:</label>
+            <input type="text" id="DWYXJX" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="DGMC">盾构型号:</label>
+            <input type="text" id="DGMC" placeholder="-">
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-group">
+            <label for="PZMJ">拼装面距:</label>
+            <input type="text" id="PZMJ" placeholder="-">
+        </div>
+        <div class="input-group">
+            <label for="PZFS">拼装范式:</label>
+            <input type="text" id="PZFS" placeholder="-">
+        </div>
+    </div>
+   
+    <button onclick="assignParameters()">确            认</button>
+    <h5>注意：参数数据重要，请复核准确！</h5>
+    </div>
+
+    <!-- 说明文档 -->
+    <div id="page4" class="page">
+ 
+ 
+        <pre style="background:#fff; padding:20px; border:1px solid #ddd;">
+
+       <a href="help.html">《盾构推进姿态和管片拼装指导系统》说明文档</a>
+      </pre>
+    </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+// 初始化事件监听
+document.addEventListener('DOMContentLoaded', () => {
+    // 工具栏事件
+    document.querySelectorAll('.tool-btn').forEach(btn => {
+        btn.addEventListener('click', () => showPage(btn.dataset.page));
+    });
+    
+    // 控制按钮事件
+    document.querySelectorAll('.control-btn').forEach(btn => {
+        if(btn.dataset.action) btn.addEventListener('click', () => {
+            if(btn.dataset.action === 'updateA1') updatePoint(ax, ay);
+            if(btn.dataset.action === 'updateA2') updatePoint(bx, by);
+            if(btn.dataset.action === 'updateA3') updatePoint(cx, cy);
+           if(btn.dataset.action === 'updateA4') updatePoint(dx, dy);
+    // if (btn.dataset.action === 'updateA4') {
+    //        updatePoint(dx, dy);         // 更新第一个点
+    //        updatePzpoint(pzpcx, pzpcy);   
+    //  }
+
+        });
+    });
+});
+
+// 页面管理
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    document.getElementById(pageId).style.display = 'block';
+    if(pageId === 'page2') initThree();
+}
+showPage('page1');
+document.getElementById('hint').textContent = '提示栏：你好！ 如有疑问或需求请联系 Email：3d141592@dmail.ai';
+// 主画布系统
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+const scale = 540 / 43.2; // 坐标系范围-21到+21
+
+let points = {
+    p: {x:ax, y:ay, style:'cross', color:'red'},      //注：p点为设计线路点
+    pz: {x:pzpcx, y:pzpcy, style:'cross', color:'blue'},  // 注：pz点为拼装管片中心点
+};
+
+function draw() {
+    ctx.clearRect(0, 0, 650, 650);
+    
+    // 绘制网格系统
+    drawGrid();
+    
+    // 绘制圆环系统
+    drawCircles();
+    
+    // 绘制动态点
+    Object.values(points).forEach(p => drawPoint(points.p));  //注：p点为设计线路点
+    Object.values(points).forEach(p => drawPoint(points.pz));  // 注：pz点位拼装管片中心点
+    
+
+}
+
+function drawGrid() {
+    // 网格线
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 0.5;
+    for(let i = -20; i <= 20; i += 5) {
+        const px = 325 + i * scale;
+        ctx.beginPath();
+        ctx.moveTo(px, 0); ctx.lineTo(px, 650);
+        ctx.stroke();
+        ctx.moveTo(0, 325 - i * scale); ctx.lineTo(650, 325 - i * scale);
+        ctx.stroke();
+    }
+    
+    // 坐标轴
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(325, 0); ctx.lineTo(325, 650);
+    ctx.moveTo(0, 325); ctx.lineTo(650, 325);
+    ctx.stroke();
+    
+    // 刻度标签
+    ctx.fillStyle = '#666';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    [-25,-20,-15,-10,-5,0,5,10,15,20,25].forEach(i => {
+        const xPos = 325 + i * scale;
+        ctx.fillText(i, xPos-5, 340);
+        ctx.fillText(i, 305, 325 - i * scale + 5);
+    });
+}
+
+function drawCircles() {
+    // 绿色虚线圆
+    ctx.strokeStyle = 'green';
+    ctx.setLineDash([5,5]);
+    ctx.beginPath();
+    ctx.arc(325, 325, 5*scale, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // 红色实线圆
+    ctx.setLineDash([]);
+    ctx.strokeStyle = 'red';
+    ctx.beginPath();
+    ctx.arc(325, 325, 10*scale, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // 浅蓝色主圆
+    ctx.strokeStyle = 'lightblue';
+    ctx.beginPath();
+    ctx.arc(325, 325, 20*scale, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // 8等分点
+    ctx.fillStyle = 'black';
+    for(let i=0; i<8; i++) {
+        const angle = (i * 45 - 90) * Math.PI / 180;
+        const x = 325 + 20*scale * Math.cos(angle);
+        const y = 325 + 20*scale * Math.sin(angle);
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = 'black';
+        ctx.fillText(`D${i+1}`, x+5, y-5);
+        ctx.fillStyle = 'black';
+    }
+    
+    // 20等分线及编号
+    ctx.strokeStyle = 'yellow';
+    for(let i=0; i<20; i++) {
+        const angle = (i * 18 - 90) * Math.PI / 180;
+        ctx.beginPath();
+        ctx.moveTo(325, 325);
+        ctx.lineTo(325 + 20*scale * Math.cos(angle), 325 + 20*scale * Math.sin(angle));
+        ctx.stroke();
+        
+        // 带圈编号
+        const midAngle = (i * 18 + 9 - 90) * Math.PI / 180;
+        const x = 325 + 15*scale * Math.cos(midAngle);
+        const y = 325 + 15*scale * Math.sin(midAngle);
+        ctx.fillStyle = 'lightyellow';
+        ctx.beginPath();
+        ctx.arc(x, y, 12, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = 'blue';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(i, x, y+4);
+    }
+}
+
+function drawPoint(p) {
+    const x = 325 + p.x * scale;
+    const y = 325 - p.y * scale;
+    
+    if(p.style === 'cross') {
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = p.color === 'blue' ? 2 : 1;
+        ctx.beginPath();
+        ctx.moveTo(x-15, y); ctx.lineTo(x+15, y);
+        ctx.moveTo(x, y-15); ctx.lineTo(x, y+15);
+        ctx.stroke();
+    } else if(p.style === 'circle') {
+        ctx.strokeStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI*2);
+        ctx.stroke();
+    } else {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI*2);
+        ctx.fill();
+    }
+    
+    // 坐标标签
+    ctx.fillStyle = 'darkred';
+    ctx.font = '15px Arial';
+    ctx.fillText(`(${p.x},${p.y})`, x+15, y-10);
+}
+
+// Three.js系统
+let scene, camera, renderer, controls;
+function initThree() {
+    if(renderer) {
+        renderer.dispose();
+        scene = null;
+        document.getElementById('three-container').innerHTML = '';
+    }
+    
+    // 初始化3D场景
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, 1, 0.01, 1000);
+    renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(window.innerWidth-40,window.innerWidth-40);
+    document.getElementById('three-container').appendChild(renderer.domElement);
+    
+    // 灯光设置
+    const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+    light.position.set(0, 20, 0);
+    scene.add(light, new THREE.AmbientLight(0xffffff, 0.8));
+    
+    // 创建路径
+    const dlinepoints = linepoints.map(point => new THREE.Vector3(point[0], point[1], point[2]));
+
+    // 创建管道（直径4，壁厚0.2）
+    const curve = new THREE.CatmullRomCurve3(dlinepoints);
+    const tubeGeometry = new THREE.TubeGeometry(curve, 64, 2, 32);
+    const tubeMaterial = new THREE.MeshPhongMaterial({
+        color: 0x666666,
+        side: THREE.DoubleSide
+    });
+    scene.add(new THREE.Mesh(tubeGeometry, tubeMaterial));
+    
+    // 创建路径线
+    const lineGeometry = new THREE.BufferGeometry().setFromPoints(dlinepoints);
+    const lineMaterial = new THREE.LineBasicMaterial({color: 0xff0000});
+    scene.add(new THREE.Line(lineGeometry, lineMaterial));
+    
+    // 添加方向箭头
+    const direction = new THREE.Vector3().subVectors(dlinepoints[7], dlinepoints[6]).normalize();
+    const arrow = new THREE.ArrowHelper(direction, dlinepoints[7], 20, 0xff0000);
+    scene.add(arrow);
+    
+    // 坐标显示
+    const coordText = dlinepoints.map((p,i) => 
+        `点${i+1}: (${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)})`
+    ).join('<br>');
+    document.getElementById('coords-display').innerHTML = coordText;
+    
+    // 相机控制
+    camera.position.set(30, 30, 30);
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    
+    // 动画循环
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+    animate();
+}
+
+// 功能函数
+function updatePoint(x, y) {
+
+if (x !== null && y !== null) {
+   x=100*x;    //*100转厘米
+  y=100*y;
+    points.p.x = Number(x.toFixed(1)); // 保留3位小数，转为数值，
+    points.p.y = Number(y.toFixed(1));
+} 
+ //   points.p.x = x;
+  //  points.p.y = y;
+
+    draw();
+}
+function updatePzpoint(xxx, yyy) {
+    points.pz.x = xxx;
+    points.pz.y = yyy;
+    draw();
+}
+
+// function dd() {
+
+//    document.getElementById('hint').textContent = '计算结果：基准点位选2号区。很好!!！';
+// }
+
+//function saveParams(prefix, start, end) {
+//    for(let i=start; i<=end; i++) {
+//        window[`${prefix}${i}`] = document.getElementById(`${prefix}${i}`).value;
+//    }
+//    document.getElementById('hint').textContent = `参数已保存（${prefix}${start}-${prefix}${end}）`;
+//}
+
+//--------input赋值区
+
+        function confirmPoints() {
+            // 获取输入值并赋给全局变量
+            pp1x = Number(document.getElementById('pp1x').value);
+            pp1y = Number(document.getElementById('pp1y').value);
+            pp1z = Number(document.getElementById('pp1z').value);
+            
+            pp2x = Number(document.getElementById('pp2x').value);
+            pp2y = Number(document.getElementById('pp2y').value);
+            pp2z = Number(document.getElementById('pp2z').value);
+            
+            pp3x = Number(document.getElementById('pp3x').value);
+            pp3y = Number(document.getElementById('pp3y').value);
+            pp3z = Number(document.getElementById('pp3z').value);
+           // alert('坐标已保存！');
+            console.log('PP1:', pp1x, pp1y, pp1z);
+            console.log('PP2:', pp2x, pp2y, pp2z);
+            console.log('PP3:', pp3x, pp3y, pp3z);
+
+            head0();
+            
+
+        }
+
+        function confirmValues() {
+            // 获取输入值并赋给全局变量
+            D1 = Number(document.getElementById('d1').value);
+            D2 = Number(document.getElementById('d2').value);
+            D3 = Number(document.getElementById('d3').value);
+            D4 = Number(document.getElementById('d4').value);
+            D5 = Number(document.getElementById('d5').value);
+            D6 = Number(document.getElementById('d6').value);
+            D7 = Number(document.getElementById('d7').value);
+            D8 = Number(document.getElementById('d8').value);
+            pzpcx=D3;
+            pzpcy=D1;
+            updatePzpoint(pzpcx, pzpcy);
+         //   alert('数值已保存！');
+            console.log('保存的数值：');
+            console.log('D1:', D1);
+            console.log('D2:', D2);
+            console.log('D3:', D3);
+            console.log('D4:', D4);
+            console.log('D5:', D5);
+            console.log('D6:', D6);
+            console.log('D7:', D7);
+            console.log('D8:', D8);
+            console.log('pzpcx:', pzpcx);
+            console.log('pzpcy:', pzpcy);
+        }
+
+       function assignCoordinates() {
+            // 获取输入值
+       //     window.p1x = document.getElementById('P1X').value;
+       //     window.p1y = document.getElementById('P1Y').value;
+       //     window.p1z = document.getElementById('P1Z').value;
+       //     window.p2x = document.getElementById('P2X').value;
+        //    window.p2y = document.getElementById('P2Y').value;
+        //    window.p2z = document.getElementById('P2Z').value;
+        //    window.p3x = document.getElementById('P3X').value;
+         //   window.p3y = document.getElementById('P3Y').value;
+       //    window.p3z = document.getElementById('P3Z').value;
+       //     window.headx = document.getElementById('headx').value;
+          //  window.heady = document.getElementById('heady').value;
+          //  window.headz = document.getElementById('headz').value;
+         //   window.tailx = document.getElementById('tailx').value;
+        //    window.taily = document.getElementById('taily').value;
+       //     window.tailz = document.getElementById('tailz').value;
+       //     window.leftx = document.getElementById('leftx').value;
+      //      window.lefty = document.getElementById('lefty').value;
+     //       window.leftz = document.getElementById('leftz').value;
+    //        window.rightx = document.getElementById('rightx').value;
+   //         window.righty = document.getElementById('righty').value;
+  //          window.rightz = document.getElementById('rightz').value;
+
+            p1x = document.getElementById('P1X').value;
+            p1y = document.getElementById('P1Y').value;
+            p1z = document.getElementById('P1Z').value;
+            p2x = document.getElementById('P2X').value;
+            p2y = document.getElementById('P2Y').value;
+            p2z = document.getElementById('P2Z').value;
+            p3x = document.getElementById('P3X').value;
+            p3y = document.getElementById('P3Y').value;
+            p3z = document.getElementById('P3Z').value;
+            headx = document.getElementById('headx').value;
+            heady = document.getElementById('heady').value;
+            headz = document.getElementById('headz').value;
+            tailx = document.getElementById('tailx').value;
+            taily = document.getElementById('taily').value;
+            tailz = document.getElementById('tailz').value;
+            leftx = document.getElementById('leftx').value;
+            lefty = document.getElementById('lefty').value;
+            leftz = document.getElementById('leftz').value;
+            rightx = document.getElementById('rightx').value;
+            righty = document.getElementById('righty').value;
+            rightz = document.getElementById('rightz').value;
+
+       console.log('p1:', p1x, p1y, p1z);
+       console.log('p2:', p2x, p2y, p2z);
+       console.log('p3:', p3x, p3y, p3z);
+       console.log('head:', headx, heady, headz);
+  //     console.log('hhead:', headxx, headyy, headzz);
+       console.log('tail:', tailx, taily, tailz);
+    //   console.log('ttail:', tailxx, tailyy, tailzz);
+       console.log('right:', rightx, righty, rightz);
+//       console.log('rright:', rightxx, rightyy, rightzz);
+
+       //     alert("坐标已赋值！");
+        }
+
+
+        function assignParameters() {
+            // 获取输入值
+            window.GPWJ = document.getElementById('GPWJ').value;
+            window.GPHD = document.getElementById('GPHD').value;
+            window.QXL = document.getElementById('QXL').value;
+            window.HFLSS = document.getElementById('HFLSS').value;
+            window.GPKD = document.getElementById('GPKD').value;
+            window.FKSL = document.getElementById('FKSL').value;
+            window.DWYXJX = document.getElementById('DWYXJX').value;
+            window.DGMC = document.getElementById('DGMC').value;
+            window.PZMJ = document.getElementById('PZMJ').value;
+            window.PZFS = document.getElementById('PZFS').value;
+
+        //    alert("参数已赋值！");
+        }
+
+
+
+// 初始化绘制
+draw();
+</script>
+</body>
+</html>
